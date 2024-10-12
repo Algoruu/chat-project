@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class ApiService {
+class ApiService extends ChangeNotifier {
+  String? username;
+
   Future<void> loginUser(String username, String password) async {
     final url = Uri.parse('http://10.0.2.2:3000/api/auth/login');
     final response = await http.post(
@@ -13,6 +16,8 @@ class ApiService {
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       if (responseData['success']) {
+        this.username = username;
+        notifyListeners();
         print('로그인 성공, 토큰: ${responseData['token']}');
       } else {
         throw Exception('로그인 실패: ${responseData['message']}');

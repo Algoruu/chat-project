@@ -14,11 +14,9 @@ function loginUser() {
   })
   .then(response => response.json())
   .then(data => {
-    if (data.success && data.userId) {
+    if (data.success) {
       alert('로그인 성공');
       // 로그인 성공 시 소켓에 사용자 ID와 이름 전송
-      localStorage.setItem('userId', data.userId);
-      localStorage.setItem('username', username);
       socket.emit('login', { userId: data.userId, username });
       document.getElementById('login-container').style.display = 'none';
       document.getElementById('chat-container').style.display = 'block';
@@ -66,15 +64,7 @@ function sendMessage() {
     return;
   }
 
-  const username = localStorage.getItem('username');
-  const userId = localStorage.getItem('userId');
-
-  if (!username || !userId) {
-    alert("로그인이 필요합니다.");
-    return;
-  }
-
-  socket.emit('message', { message, username });
+  socket.emit('message', { message: message });
   input.value = '';
 }
 
@@ -84,4 +74,14 @@ socket.on('message', function({ username, message }) {
   const messageElement = document.createElement('div');
   messageElement.textContent = `${username}: ${message}`;
   messagesDiv.appendChild(messageElement);
+});
+
+// 기존 채팅 기록 수신 시 화면에 표시
+socket.on('chat history', function(messages) {
+  const messagesDiv = document.getElementById('messages');
+  messages.forEach(({ username, message }) => {
+    const messageElement = document.createElement('div');
+    messageElement.textContent = `${username}: ${message}`;
+    messagesDiv.appendChild(messageElement);
+  });
 });
