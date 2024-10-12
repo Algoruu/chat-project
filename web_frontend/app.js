@@ -12,21 +12,21 @@ function loginUser() {
     },
     body: JSON.stringify({ username, password }),
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert('로그인 성공');
-      // 로그인 성공 시 소켓에 사용자 ID와 이름 전송
-      socket.emit('login', { userId: data.userId, username });
-      document.getElementById('login-container').style.display = 'none';
-      document.getElementById('chat-container').style.display = 'block';
-    } else {
-      alert('로그인에 실패했습니다.');
-    }
-  })
-  .catch((error) => {
-    console.error('로그인 중 오류 발생:', error);
-  });
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('로그인 성공');
+        // 로그인 성공 시 소켓에 사용자 ID와 이름 전송
+        socket.emit('login', { userId: data.userId, username });
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('chat-container').style.display = 'block';
+      } else {
+        alert('로그인에 실패했습니다.');
+      }
+    })
+    .catch((error) => {
+      console.error('로그인 중 오류 발생:', error);
+    });
 }
 
 // 회원가입 함수
@@ -64,9 +64,10 @@ function sendMessage() {
     return;
   }
 
+  // 서버로 메시지 전송
   socket.emit('message', { message: message });
   input.value = '';
-}
+};
 
 // 메시지 수신 시 화면에 표시
 socket.on('message', function({ username, message }) {
