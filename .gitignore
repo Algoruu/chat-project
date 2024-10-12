@@ -1,0 +1,15 @@
+# Node.js dependencies
+node_modules/
+
+# 환경 설정 파일
+.env
+
+# 로그 파일
+*.log
+
+# 빌드 디렉터리
+flutter_app/build/
+flutter_app/.dart_tool/
+
+# VSCode 설정 파일
+.vscode/
