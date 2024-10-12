@@ -30,18 +30,33 @@ io.on('connection', (socket) => {
   console.log('사용자가 연결되었습니다.');
 
   // 로그인한 사용자의 ID를 소켓에 저장
-  socket.on('login', (userId) => {
+  socket.on('login', ({ userId, username }) => {
+    if (!userId || !username) {
+      console.error('로그인 정보가 유효하지 않습니다.');
+      return;
+    }
     socket.userId = userId;
+    socket.username = username;
     console.log('로그인한 사용자 ID:', userId);
   });
 
-  socket.on('chat message', (msg) => {
-    console.log('메시지:', msg);
-    io.emit('chat message', msg);
+  socket.on('message', ({ message }) => {
+    if (!socket.userId) {
+      console.error('로그인되지 않은 사용자가 메시지를 전송했습니다.');
+      return;
+    }
+    if (!message) {
+      console.error('메시지가 비어 있습니다.');
+      return;
+    }
+
+    console.log('메시지:', message);
+    // 메시지와 함께 사용자 ID와 이름을 전송
+    io.emit('message', { userId: socket.userId, username: socket.username, message });
 
     // 메시지를 데이터베이스에 저장
     const query = 'INSERT INTO chat_messages (user_id, message) VALUES (?, ?)';
-    db.query(query, [socket.userId, msg], (err) => {
+    db.query(query, [socket.userId, message], (err) => {
       if (err) {
         console.error('메시지를 저장하는 중 오류 발생:', err);
       }

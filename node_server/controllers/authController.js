@@ -37,15 +37,13 @@ exports.login = (req, res) => {
       }
       
       const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      res.status(StatusCodes.OK).json({ success: true, token });
+      res.status(StatusCodes.OK).json({ success: true, token, userId: user.id }); // userId 추가
     } catch (err) {
       console.error('비밀번호 비교 중 오류:', err);
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: '서버 오류가 발생했습니다.' });
     }
   });
 };
-
-
 
 exports.sendPasswordResetEmail = (req, res) => {
   const { email } = req.body;

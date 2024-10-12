@@ -14,10 +14,12 @@ function loginUser() {
   })
   .then(response => response.json())
   .then(data => {
-    if (data.success) {
+    if (data.success && data.userId) {
       alert('로그인 성공');
-      // 로그인 성공 시 소켓에 사용자 ID 전송
-      socket.emit('login', data.userId);
+      // 로그인 성공 시 소켓에 사용자 ID와 이름 전송
+      localStorage.setItem('userId', data.userId);
+      localStorage.setItem('username', username);
+      socket.emit('login', { userId: data.userId, username });
       document.getElementById('login-container').style.display = 'none';
       document.getElementById('chat-container').style.display = 'block';
     } else {
@@ -64,14 +66,22 @@ function sendMessage() {
     return;
   }
 
-  socket.emit('chat message', message);
+  const username = localStorage.getItem('username');
+  const userId = localStorage.getItem('userId');
+
+  if (!username || !userId) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  socket.emit('message', { message, username });
   input.value = '';
 }
 
 // 메시지 수신 시 화면에 표시
-socket.on('chat message', function(msg) {
+socket.on('message', function({ username, message }) {
   const messagesDiv = document.getElementById('messages');
   const messageElement = document.createElement('div');
-  messageElement.textContent = msg;
+  messageElement.textContent = `${username}: ${message}`;
   messagesDiv.appendChild(messageElement);
 });
