@@ -39,7 +39,7 @@ io.on('connection', (socket) => {
     socket.username = username;
     console.log('로그인한 사용자 ID:', userId);
 
-    // 연결된 모든 사용자에게 현재 채팅 기록 전송
+    // 연결된 사용자에게 현재 채팅 기록 전송
     const query = 'SELECT * FROM chat_messages';
     db.query(query, (err, results) => {
       if (err) {
@@ -50,6 +50,19 @@ io.on('connection', (socket) => {
     });
   });
 
+  // 클라이언트가 채팅 기록을 요청할 때 처리
+  socket.on('requestChatHistory', () => {
+    const query = 'SELECT * FROM chat_messages';
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error('채팅 기록을 불러오는 중 오류 발생:', err);
+      } else {
+        socket.emit('chat history', results);
+      }
+    });
+  });
+
+  // 메시지 수신 및 처리
   socket.on('message', ({ message }) => {
     if (!socket.userId || !socket.username) {
       console.error('로그인되지 않은 사용자가 메시지를 전송했습니다.');
@@ -62,7 +75,8 @@ io.on('connection', (socket) => {
 
     console.log('메시지:', message);
     // 메시지와 함께 사용자 ID와 이름을 전송
-    io.emit('message', { userId: socket.userId, username: socket.username, message });
+    const messageData = { userId: socket.userId, username: socket.username, message };
+    io.emit('message', messageData); // 모든 연결된 클라이언트에게 전송
 
     // 메시지를 데이터베이스에 저장
     const query = 'INSERT INTO chat_messages (user_id, username, message) VALUES (?, ?, ?)';
@@ -75,16 +89,6 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('사용자가 연결이 끊겼습니다.');
-  });
-
-  // 클라이언트에게 채팅 기록 전송
-  const query = 'SELECT * FROM chat_messages';
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('채팅 기록을 불러오는 중 오류 발생:', err);
-    } else {
-      socket.emit('chat history', results);
-    }
   });
 });
 
