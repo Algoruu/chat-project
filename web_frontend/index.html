@@ -90,17 +90,22 @@
   <title>채팅 애플리케이션</title>
 </head>
 <body>
-  <div id="login-container">
-    <input type="text" id="username" placeholder="사용자명">
-    <input type="password" id="password" placeholder="비밀번호">
-    <button onclick="loginUser()">로그인</button>
-    <button onclick="openRegisterPage()">회원가입</button>
-  </div>
+  <div class="container">
+    <div id="login-container" class="box">
+      <h2>로그인</h2>
+      <input type="text" id="username" placeholder="사용자명">
+      <input type="password" id="password" placeholder="비밀번호">
+      <button onclick="loginUser()">로그인</button>
+      <button class="secondary-btn" onclick="openRegisterPage()">회원가입</button>
+    </div>
 
-  <div id="chat-container" style="display: none;">
-    <input type="text" id="chat-input" placeholder="메시지를 입력하세요">
-    <button onclick="sendMessage()">전송</button>
-  </div>
-  <div id="messages"></div>
-</body>
-</html>
+    <div id="chat-container" style="display: none;">
+      <h2>채팅</h2>
+      <div id="messages"></div>
+      <div style="display: flex; margin-top: 10px;">
+        <input type="text" id="chat-input" placeholder="메시지를 입력하세요" style="flex: 1; padding: 10px;">
+        <button onclick="sendMessage()" style="width: 80px; margin-left: 10px;">전송</button>
+      </div>
+    </div>
+  </body>
+  </html>
