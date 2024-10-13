@@ -6,11 +6,17 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
   <script>
-    const socket = io('http://localhost:3000');
+    // const socket = io('http://10.0.2.2:3000');
+    const socket = io('http://192.168.0.3:3000');
 
-    // 기존 메시지 수신 처리
+    // 로그인 상태 변수
+    let isLoggedIn = false;
+
+    // 로그인 성공 후 채팅 기록 수신 처리
     socket.on('chat history', function(messages) {
+      if (!isLoggedIn) return; // 로그인하지 않은 경우 메시지 무시
       const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML = ''; // 이전 메시지 클리어
       messages.forEach(({ username, message }) => {
         const messageElement = document.createElement('div');
         messageElement.textContent = `${username}: ${message}`;
@@ -20,6 +26,7 @@
 
     // 새로운 메시지 수신 시 화면에 표시
     socket.on('message', function({ username, message }) {
+      if (!isLoggedIn) return; // 로그인하지 않은 경우 메시지 무시
       const messagesDiv = document.getElementById('messages');
       const messageElement = document.createElement('div');
       messageElement.textContent = `${username}: ${message}`;
@@ -42,6 +49,7 @@
       .then(data => {
         if (data.success) {
           alert('로그인 성공');
+          isLoggedIn = true;
           socket.emit('login', { userId: data.userId, username });
           document.getElementById('login-container').style.display = 'none';
           document.getElementById('chat-container').style.display = 'block';
@@ -54,33 +62,18 @@
       });
     }
 
-    // 회원가입 함수
-    function registerUser() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-
-      fetch('http://localhost:3000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          alert('회원가입이 완료되었습니다. 로그인 해 주세요.');
-        } else {
-          alert('회원가입에 실패했습니다.');
-        }
-      })
-      .catch((error) => {
-        console.error('회원가입 중 오류 발생:', error);
-      });
+    // 회원가입 페이지로 이동 함수
+    function openRegisterPage() {
+      window.location.href = 'register.html';
     }
 
     // 채팅 메시지 전송 함수
     function sendMessage() {
+      if (!isLoggedIn) {
+        alert("로그인 후 메시지를 전송할 수 있습니다.");
+        return;
+      }
+
       const input = document.getElementById('chat-input');
       const message = input.value;
 
@@ -89,7 +82,8 @@
         return;
       }
 
-      socket.emit('message', { message });
+      const username = 'webUser'; // 웹에서 보낸 사용자명 (예: 고정값 또는 사용자 입력)
+      socket.emit('message', { username, message });
       input.value = '';
     }
   </script>
@@ -100,9 +94,9 @@
     <input type="text" id="username" placeholder="사용자명">
     <input type="password" id="password" placeholder="비밀번호">
     <button onclick="loginUser()">로그인</button>
-    <button onclick="registerUser()">회원가입</button>
+    <button onclick="openRegisterPage()">회원가입</button>
   </div>
-  
+
   <div id="chat-container" style="display: none;">
     <input type="text" id="chat-input" placeholder="메시지를 입력하세요">
     <button onclick="sendMessage()">전송</button>

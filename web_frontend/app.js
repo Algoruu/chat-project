@@ -1,4 +1,7 @@
-const socket = io('http://localhost:3000');
+require('dotenv').config();
+const socket = io(process.env.SERVER_URL);
+
+let isLoggedIn = false;
 
 // 로그인 함수
 function loginUser() {
@@ -15,8 +18,7 @@ function loginUser() {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        alert('로그인 성공');
-        // 로그인 성공 시 소켓에 사용자 ID와 이름 전송
+        isLoggedIn = true;
         socket.emit('login', { userId: data.userId, username });
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('chat-container').style.display = 'block';
@@ -54,20 +56,19 @@ function registerUser() {
   });
 }
 
-// 채팅 메시지 전송 함수
+// 메시지 전송 함수
 function sendMessage() {
-  const input = document.getElementById('chat-input');
-  const message = input.value;
-
-  if (message.trim() === "") {
-    alert("메시지를 입력하세요.");
+  if (!isLoggedIn) {
+    alert('로그인 후 메시지를 전송할 수 있습니다.');
     return;
   }
 
-  // 서버로 메시지 전송
-  socket.emit('message', { message: message });
+  const input = document.getElementById('chat-input');
+  const message = input.value;
+
+  socket.emit('message', { userId, username, message });
   input.value = '';
-};
+}
 
 // 메시지 수신 시 화면에 표시
 socket.on('message', function({ username, message }) {
